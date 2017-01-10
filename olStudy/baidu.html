@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>百度示例</title>
+    <link rel="stylesheet" href="v3.7.0/css/ol.css" type="text/css">
+    <script src="v3.7.0/build/ol.js"></script>
+    <script>
+        function init() {
+            var resolutions = [];
+            var tileSize = 256;
+            var projection = new ol.proj.get("EPSG:3857");
+            for (var i = 0; i < 19; i++) {
+                resolutions[i] = Math.pow(2, 18 - i);
+            }
+            var projectionExtent = projection.getExtent();
+            var tilegrid = new ol.tilegrid.TileGrid({
+                //origin: [-10,28000],
+                origin: [-1657, 26456],
+                resolutions: resolutions
+            });
+            console.info(new ol.proj.transform([43.88955327932,12.590178885765], 'EPSG:4326','EPSG:3857'));
+            var attribution = new ol.Attribution({
+                html: 'Tiles &copy; <a href="http://www.hikvision.com">' +
+                        'My Test</a>'
+            });
+            var baiduSource = new ol.source.TileImage({
+                attributions: [attribution],
+                projection: projection,
+                tileGrid: tilegrid,
+                tileUrlFunction: function (tileCoord, obj1, obj2) {
+                    if (!tileCoord) {
+                        return "";
+                    }
+                    var z = tileCoord[0];
+                    var x = tileCoord[1];
+                    var y = tileCoord[2];
+                    //y = -y - 1;  默认轴方向是右下的，但是百度的轴方向是右上。 所以y值 应该变的，但是为何没有 ？
+                    if (x < 0) {
+                        x = "M" + (-x);
+                    }
+                    if (y < 0) {
+                        y = "M" + (-y);
+                    }
+
+                    return "http://online3.map.bdimg.com/onlinelabel/?qt=tile&x=" + x + "&y=" + y + "&z=" + z + "&styles=pl&udt=20151021&scaler=1";
+                }
+            });
+            var mousePositionControl = new ol.control.MousePosition({
+                coordinateFormat: ol.coordinate.createStringXY(4),
+                projection: 'EPSG:4326',
+                className: 'custom-mouse-position',
+                target: document.getElementById('location'),
+                undefinedHTML: '&nbsp;'
+            });
+            var scaleLineControl = new ol.control.ScaleLine({
+                target: document.getElementById('scale')
+            });
+
+
+
+
+            var baiduLayer = new ol.layer.Tile({
+                extent: projectionExtent,
+                source:baiduSource
+            });
+
+            var mapCenter = new ol.proj.transform([120.175,30.248], 'EPSG:4326','EPSG:3857')
+            var map = new ol.Map({
+                target: 'map',
+                layers: [baiduLayer],
+                view: new ol.View({
+                    center:  mapCenter,
+                    zoom: 12
+                })
+            });
+        }
+    </script>
+</head>
+<body onload="init()">
+<div id="map" style="width: 100%;height: 800px">
+    <div id="measure" class="measuretooltip tooltip-measure"></div>
+    <div id="measurehelp" class="measuretooltip"></div>
+    <div id="wrapper"  >
+        <div id="location"></div>
+        <div id="scale"></div>
+    </div>
+</div>
+</body>
+
+</html>

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <meta http-equiv="Access-Control-Allow-Origin" content="*">
+  <title>ol3 pgRouting client</title>
+  <meta charset="utf-8">
+  <link href="v3.7.0/css/ol.css" rel="stylesheet">
+  <style>
+  #map {
+    width: 100%;
+    height: 800px;
+  }
+  </style>
+   <script src="v3.7.0/build/ol.js"></script>  
+ 
+  </head>
+  <body >
+    <div style="position: absolute; top: 50px; left: 80px; width: 300px; height: 100px;">
+		<div id='map' style='width:1800px;height:800px;'></div>		
+	</div>
+	<script>
+		var map = new ol.Map({});
+		map.setTarget('map');
+		map.setView(new ol.View({
+			center: [110.3453, 20.0303],
+			projection: ol.proj.get('EPSG:4326'),
+			zoom: 18,
+			minZoom: 16,
+			maxZoom: 24
+		}));
+	
+		var params = {
+			LAYERS: 'parking:vTingchewei',
+			FORMAT: 'image/png'
+		};
+		
+		var viewparams = [
+			'tbl:wanghaiguojia_b2_tingchewei'
+		];
+		params.viewparams = viewparams;
+		var vTingchewei = new ol.layer.Image({
+			source: new ol.source.ImageWMS({
+			url:'http://10.20.135.14/geoserver/parking/wms',		
+			params: params,
+			serverType:'geoserver',
+		})
+    });
+    map.addLayer(vTingchewei);
+	</script>
+  </body>
+</html>

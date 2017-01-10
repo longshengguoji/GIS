@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>WFS LayerTest</title>
+    <link rel="stylesheet" href="leafletsrc/leaflet.css"></link>
+    <style type="text/css">
+        body {
+            padding: 0;
+            margin: 0;
+        }
+        html, body, #map {
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+<div id="map"></div>
+<script src="leafletsrc/leaflet-src.js"></script>
+<script src="lib/NonTiledLayer.js"></script>
+<script src="lib/NonTiledLayer.WMS.js"></script>
+<script src="lib/jquery-1.9.1.min.js"></script>
+<script>
+    //创建map对象
+    var map = L.map('map',{
+        center:[ 30.2117,120.2161],
+        zoom:18,
+        crs: L.CRS.EPSG4326
+    })
+
+    //创建wms图层，并添加到地图
+    var wmsLayer = new L.NonTiledLayer.WMS('http://10.20.135.14:80/geoserver/parking/wms?',{
+        layers: 'hikvision2qi_b3_quyu,hikvision2qi_b3_zhangaiwu,hikvision2qi_b3_tingchewei,hikvision2qi_b3_dian',
+        format: 'image/png',
+        transparent: true,
+        maxZoom: 22,
+        minZoom: 15
+    }).addTo(map);
+
+    //创建wfs图层
+    var wfsUrl = 'http://10.20.135.14:80/geoserver/ows',
+         defaultParameters = {
+            service: 'WFS',
+            version: '2.0',
+            request: 'GetFeature',
+            typeName: 'parking:hikvision2qi_b3_tingchewei',
+            maxFeatures: 500,
+            outputFormat: 'text/javascript',
+            format_options: 'callback: getJson',
+            srsName:'EPSG:4326'
+
+         },
+         highlightedFeature = null,
+         parameters = L.Util.extend(defaultParameters),
+         URL = wfsUrl+ L.Util.getParamString(parameters);
+
+    function highlightOneFeature(e) {
+        if (highlightedFeature) {
+            resetHighlight(highlightedFeature);
+        };
+        var feature = e.target;
+        highlightedFeature = feature;
+        feature.setStyle({
+            fillColor: '#ff0000',
+            color: '#e8d1ae',
+            weight: 1,
+            opacity: 1
+        });
+        if (!L.Browser.ie && !L.Browser.opera) {
+            feature.bringToFront();
+        }
+    }
+    function resetHighlight(feature) {
+        feature.setStyle({
+            fillColor:  '#ffe7a6',
+            color: '#e8d1ae',
+            opacity: 0.8,
+            weight: 1
+        });
+    }
+    var wfsLayer = null;
+    var ajax = $.ajax({
+        url : URL,
+        dataType : 'jsonp',
+        jsonpCallback : 'getJson',
+        success : function (response) {
+            wfsLayer = L.geoJson(response, {
+                style: function (feature) {
+                    return {
+                        color: '#e8d1ae',
+                        fillColor:'#ffe7a6',
+                        opacity: 0.8,
+                        weight: 1
+                    };
+                },
+                onEachFeature: function (feature, layer) {
+                    popupOptions = {maxWidth: 200};
+                    layer.bindPopup("<h3>" + feature.id + "</h3>" +
+                                    "<b>Difficulty: </b>" + feature.type +
+                                    "<br><b>Description: </b>" + feature.properties.description
+                            ,popupOptions);
+                    layer.on({
+                        //mouseover: highlightFeature,
+                        //mouseout: resetHighlight,
+                        click: highlightOneFeature
+                    });
+                }
+            }).addTo(map);
+        }
+    });
+
+</script>
+</body>
+</html>

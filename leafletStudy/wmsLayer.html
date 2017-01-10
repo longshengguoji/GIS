@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>WMS LayerTest</title>
+    <link rel="stylesheet" href="leafletsrc/leaflet.css"></link>
+    <style type="text/css">
+        body {
+            padding: 0;
+            margin: 0;
+        }
+        html, body, #map {
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+<div id="map"></div>
+<script src="leafletsrc/leaflet.js"></script>
+<script>
+    var map = L.map('map',{
+        center:[ 30.210771919384143,120.21594200520218],
+        zoom:18,
+        crs: L.CRS.EPSG4326
+    })
+    var districtLayer = L.tileLayer.wms('http://10.20.135.14:80/geoserver/parking/wms?',{
+        layers: 'hikvision2qi_b3_quyu,hikvision2qi_b3_zhangaiwu,hikvision2qi_b3_tingchewei,hikvision2qi_b3_dian',
+        tiled: true,
+        format: 'image/png',
+        transparent: true,
+        maxZoom: 22,
+        minZoom: 15,
+        continuousWorld: true
+    }).addTo(map);
+</script>
+</body>
+</html>
